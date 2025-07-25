@@ -124,6 +124,7 @@ An array of values extracted from each object in the dataset, following the shap
 * Minimizes repeated keys → smaller payload size.
 * Easy to cache structure separately.
 * Fast deserialization with uniform template.
+* Works well with JSON-compatible transport.
 * Ideal for tabular or API responses with fixed schema.
 
 ---
