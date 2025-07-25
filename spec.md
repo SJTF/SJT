@@ -18,7 +18,7 @@ Structured JSON Table (SJT) Format is a compact and bandwidth-efficient data rep
 
 ### Motivation
 
-Traditional JSON represents each object or array with its full property names, leading to redundant transmission and increased payload size. SJTF separates structure and data, allowing the client and server to reconstruct objects without repeating field names.
+Traditional JSON represents each object or array with its full property names, leading to redundant transmission and increased payload size. SJT separates structure and data, allowing the client and server to reconstruct objects without repeating field names.
 
 ---
 
