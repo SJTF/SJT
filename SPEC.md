@@ -205,11 +205,11 @@ This allows encoding deeply nested array/object combinations naturally.
 
 #### Step 1: Validate Input
 
-* Input must be an array of uniformly structured JSON objects.
+* Input must be an uniformly structured JSON objects.
 
 #### Step 2: Build Header
 
-* Recursively walk through the first object to collect all keys.
+* Recursively walk through object to collect all keys.
 * If a value is a nested object or array of structured objects, recurse and build a nested header.
 
 #### Step 3: Encode Data
