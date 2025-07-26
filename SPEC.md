@@ -2,7 +2,7 @@
 
 ### Overview
 
-Structured JSON Table (SJT) is a compact, tree-structured encoding format for JSON-like data, for bandwidth-efficient data representation designed to encode large, structured datasets—especially those with uniform shape or schema—into a nested, index-driven format. This reduces redundancy and improves serialization/deserialization speed over conventional JSON.
+Structured JSON Table (SJT) is a compact, tree-structured encoding format for JSON-like, bandwidth-efficient data representation designed to encode large, structured datasets—especially those with uniform shape or schema—into a nested, index-driven format. This reduces redundancy and improves serialization/deserialization speed over conventional JSON.
 
 ---
 
