@@ -75,6 +75,8 @@ The header is a recursive array that defines the structure of the data:
 
 ```ts
 ['id', 'name'] // => object { id: ..., name: ... }
+[null] // => Primitive Array
+
 ```
 
 ### Array of Object
@@ -135,6 +137,40 @@ data: [
 ]
 ```
 
+### Primitive Array
+
+```ts
+Input:
+[
+  1,2
+]
+
+Encoded:
+header: [null]
+data: [
+  [1,2]
+]
+
+```
+
+### Field containing a primitive array
+
+```ts
+Input:
+{
+ tag: ['ts', 'code']
+}
+
+Encoded:
+header: ["tag", [null]]
+data: [
+  ['ts', 'code']
+]
+
+```
+
+
+
 ### Nested Object
 
 ```ts
@@ -169,9 +205,12 @@ data: ['hello', [ ['1', 'Yuki'], ['2', 'Aki'] ]]
 
 ### Disambiguation:
 
+*Header:*
 * `['id', 'name']` → flat object
 * `[['id', 'name']]` → array of objects
+* `[null]` → primitive array
 
+[]
 Decoder can distinguish them via:
 
 ```ts
