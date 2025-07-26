@@ -21,7 +21,7 @@ Structured JSON Table (SJT) is a compact, tree-structured encoding format for JS
   * [Nested Array of Objects](#nested-array-of-objects)
 * [Encoding/Decoding Rules](#encodingdecoding-rules)
 * [Encoding Algorithm](#encoding-algorithm-server-side)
-* [Decoding Algorithm (Client-side)](#decoding-algorithm-client-side)
+* [Decoding Algorithm](#decoding-algorithm-client-side)
 * [Server Encoding Note](#server-encoding-note)
 * [Constraints](#constraints)
 * [Advantages](#advantages)
@@ -204,13 +204,12 @@ data: ['hello', [ ['1', 'Yuki'], ['2', 'Aki'] ]]
 ## Encoding/Decoding Rules
 
 ### Disambiguation:
-
+  
 *Header:*
 * `['id', 'name']` → flat object
 * `[['id', 'name']]` → array of objects
 * `[null]` → primitive array
 
-[]
 Decoder can distinguish them via:
 
 ```ts
@@ -297,6 +296,10 @@ When encoding on the server:
 * Always represent array of objects as nested headers: `[['key1', 'key2']]`
 * For deeply nested structures, walk the structure depth-first and wrap arrays of objects accordingly.
 * Always ensure `data` mirrors the `header` shape, in both structure and order.
+* `[null]` in header indicates a primitive array
+* Header always maps directly to data layout
+* All data arrays are wrapped once, even for primitive values
+* Mixed types in primitive arrays are discouraged and not supported
 
 ---
 
