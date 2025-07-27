@@ -602,7 +602,7 @@ data          ::= string | number | boolean | null | array of data
 > * `body_array`: Must have the same structure as `header_array`.
 > * `string`: Key name
 > * `null`: Used to represent a primitive array (`data` must be an array of primitives).
-> * `[string, header[]]`: Nested object key-value pair.
+> * `array of (string, array of header)`: Nested object key-value pair.
 > * `array<array<<header>>`: Used to represent arrays of objects, with each object conforming to the described structure.
 
 ****
