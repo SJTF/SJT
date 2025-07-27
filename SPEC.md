@@ -26,7 +26,7 @@ Structured JSON Table (SJT) is a compact, tree-structured encoding format for JS
 * [Constraints](#constraints)
 * [Advantages](#advantages)
 * [Use Cases](#use-cases)
-* [Appendix A — File Extension and Media Type Specification](#appendix-a—file-extension-and-media-type-specification)
+* [Appendix A — File Extension and Media Type Specification](#appendix-a--file-extension-and-media-type-specification)
 
 
 ---
