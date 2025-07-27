@@ -309,7 +309,7 @@ When encoding on the server:
 
 * The structure must be **uniform** across all entries.
 * Header keys must be **valid JSON object keys**.
-* Mixed-type fields or varying structures across entries are **not supported** in this version.
+* Mixed-type fields or varying structures across entries are **not supported**.
 
 ---
 
