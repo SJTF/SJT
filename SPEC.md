@@ -73,7 +73,8 @@ An SJT document is an array with two elements:
 #### `SjtHeader`
 
 Defines the fields, their order, and metadata.
-The `header` field in SJT is always an **array** containing one or more elements, where each element conforms to the recursive `Header` structure defined as:
+
+The `header` field in SJT is always an **array**, possibly empty array, where each element (if present) conforms to the recursive `Header` structure defined as:
 
 ```ts
 type SjtHeader =
@@ -82,12 +83,27 @@ type SjtHeader =
   | [string, Header[]]           // Nested object key
   | Header[]                     // Object array
 ```
+This allows representing an empty object with:
+
+```json
+header = []
+body   = []
+```
+
+Which decodes to:
+
+```json
+{}
+```
+
+If the array is not empty, each element must conform to the `Header` grammar above.
 
 In other words, the top-level `header` is always of type `SjtHeader[]`.
 
 #### `SjtData`
 
 Contains the actual content, organized in **column-major layout**
+
 The `Data` field in SJT is always an **array** containing one or more elements, where each element conforms to the recursive `Data` structure defined as:
 
 ```ts
