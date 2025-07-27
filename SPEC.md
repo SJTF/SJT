@@ -22,12 +22,14 @@ Structured JSON Table (SJT) is a lightweight, schema-based data encoding format 
 * [Encoding/Decoding Rules](#encodingdecoding-rules)
 * [Encoding Algorithm](#encoding-algorithm)
 * [Decoding Algorithm](#decoding-algorithm)
+* [Error Handling](#error-handling)
 * [Server Encoding Note](#server-encoding-note)
 * [Constraints](#constraints)
 * [Advantages](#advantages)
 * [Benchmarks](#benchmarks)
 * [Use Cases](#use-cases)
 * [Appendix A — File Extension and Media Type Specification](#appendix-a--file-extension-and-media-type-specification)
+* [Appendix B: Header Grammar & JSON Schema Mapping](#appendix-b--header-grammar---json-schema-mapping)
 
 
 ---
@@ -58,7 +60,7 @@ An SJT document is an array with two elements:
 > * The **first element** must always be a valid `SjtHeader`
 > * The **second element** must always be a valid `SjtData` block
 * The first two items (`header` and `data`) are mandatory and define the structure and values.
-* The third item (`metadata`) is optional and **reserved for future extensions**.
+* The third item (`metadata`) is optional and **reserved for future extensions** (see appendix).
 
   * It must be an object if present.
   * Parsers **must not fail** if `metadata` is present but unrecognized.
@@ -70,19 +72,29 @@ An SJT document is an array with two elements:
 
 #### `SjtHeader`
 
-Defines the fields, their order, and metadata:
+Defines the fields, their order, and metadata.
+The `header` field in SJT is always an **array** containing one or more elements, where each element conforms to the recursive `Header` structure defined as:
 
 ```ts
- SjtHeader = string[]
+type SjtHeader =
+  | string
+  | null
+  | [string, Header[]]           // Nested object key
+  | Header[]                     // Object array
 ```
+
+In other words, the top-level `header` is always of type `SjtHeader[]`.
 
 #### `SjtData`
 
-Contains the actual content, organized in **column-major layout**:
+Contains the actual content, organized in **column-major layout**
+The `Data` field in SJT is always an **array** containing one or more elements, where each element conforms to the recursive `Data` structure defined as:
 
 ```ts
-SjtData = any[][]  // Each inner array is a column of values
+SjtData = string | boolean | null | number | SjtData[]   // Each inner array is a column of values
 ```
+
+In other words, the top-level `Data` is always of type `SjtData[]`.
 
 ---
 
@@ -239,6 +251,66 @@ data: ['hello', [ ['1', 'Yuki'], ['2', 'Aki'] ]]
 
 ## Encoding/Decoding Rules
 
+---
+
+### **Rule: `null` Must Be a Standalone Header**
+
+In SJT, the special value `null` in the `header` array is used to indicate that the corresponding column in `data` is a **primitive array** (see previous section). However, to avoid ambiguity, the following strict rule applies:
+
+> **A `null` entry must be the **only** item in its `header` array.**
+
+#### Valid Header for Primitive Array:
+
+```jsonc
+[ null ]              // means: primitive array, e.g. [1, 2, 3]
+```
+
+#### Invalid Headers:
+
+```jsonc
+[ null, null ]        // ❌ ambiguous: interpreted as an object with duplicate keys (invalid)
+[ "name", null ]      // ❌ mixed keys in same object (invalid if used to define object structure)
+```
+
+Including multiple `null` values within the same array creates ambiguity, as SJT treats header arrays as **structured key paths** for object construction. Having duplicate keys (`null`, `null`) is structurally invalid and MUST result in a decoding error.
+
+#### Rationale:
+
+* SJT maps `header` to structured objects by aligning the shape of the header array with the shape of the `data`.
+* `[null, null]` would imply an object with two identical `null` keys, which violates JSON object key uniqueness.
+
+#### Enforcement:
+
+If a `header` array contains more than one item and includes `null`, decoding MUST fail with an error.
+
+---
+
+### **Distinction Between `null` and `"null"` in Header Keys**
+
+In JSON, all object keys must be strings. Therefore, to encode a key named `"null"` (the literal string), it must be explicitly written as a string:
+
+#### Valid Representation of a `"null"` Key (string):
+
+```jsonc
+[ "null" ]         // means: [{ "null": value }]
+[null]            // means: primitive array, NOT an object key
+```
+
+#### Invalid Representation:
+
+```jsonc
+['name', null] // Invalid
+```
+
+#### Rule:
+
+> When encoding a key named `"null"`, use the string `'null'`.
+> The bare value `null` in a header is reserved **only** for marking primitive arrays.
+
+This distinction ensures clarity and avoids structural ambiguity when parsing and serializing SJT.
+
+---
+
 ### Disambiguation:
   
 *Header:*
@@ -334,6 +406,77 @@ function decodeSJT([header, values]): any {
 
 ---
 
+## Error Handling
+
+Implementations of the SJT decoder **must strictly validate input structure** and **must throw an error** (or terminate with failure) upon encountering any of the following violations:
+
+#### **Structural Violations**
+
+* The root value is not an array of length 2 or 3
+* The first element (header) is not an array
+* The second element (data) is not an array
+
+Header must conform to:
+
+* A **string** (single column)
+* An **array of**:
+
+  * A `[string, array<header>]` (nested object)
+  * A `array<header>` (array of structured object)
+
+If not, throw:
+
+```ts
+throw new SJTInvalidHeaderError("Header structure is invalid. Expected string | [string, header[]] | header[][]");
+```
+
+#### **Semantic Violations**
+
+* Rows or values contain undefined/unsupported JSON values (e.g., functions, `undefined`, symbols)
+
+#### `null` Header Behavior**
+
+When a `header` entry is `null`, it indicates that the corresponding **data field must be one of the following**:
+
+* A primitive value (`string`, `number`, `boolean`, or `null`)
+
+Any other structure (such as objects or arrays containing objects) is considered invalid and must throw an error.
+
+#### **Invalid JSON**
+
+* The entire SJT input must be a valid JSON string or parsed JSON structure.
+* If not parseable or `null`, throw:
+  **`SJTParseError: Input is not valid JSON.`**
+
+#### **Metadata Violations (non-fatal)**
+
+* Metadata is optional; extra fields in metadata should be ignored or logged — not cause hard failure
+
+---
+
+**Decoder Behavior Summary**
+
+| Error Type            | Must Throw? | Suggested Exception Name    |
+| --------------------- | ----------- | --------------------------- |
+| Invalid root shape    | ✅ Yes       | `SJTFormatError`            |
+| Header mismatch       | ✅ Yes       | `SJTHeaderMismatchError`    |
+| Data mismatch         | ✅ Yes       | `SJTDataMismatchError`      |
+| Metadata irregularity | ❌ No        | (Optional: `SJTWarning`)    |
+
+**Examples**:
+
+```js
+
+['name', ['user', ['id'] ]] // valid (nested object)
+
+['name', ['user', 'id' ]] // Invalid
+
+[null] // valid (primitive array)
+[null, null] // Invalid
+```
+
+---
+
 ## Server Encoding Note
 
 When encoding on the server:
@@ -419,6 +562,115 @@ Content-Encoding: gzip
 
 * Applications MAY choose to detect SJT format via magic bytes or schema markers, but using correct file extensions and media types is STRONGLY RECOMMENDED.
 * When embedding SJT in other containers (e.g., tarballs or archives), extensions SHOULD be preserved for extraction clarity.
+
+---
+
+## Appendix B: Header Grammar & JSON Schema Mapping
+
+#### Formal Recursive Header Grammar (EBNF Style)
+
+```ebnf
+header        ::= string
+                | null                                      (*Primitive Array*)  
+                | array of (string, array of header)       (* object with nested fields *)
+                | array of array of header                 (* array of nested objects *)
+data          ::= string | boolean | null | data[]
+```
+
+> `string`: Column name
+
+> `null`: Column namePrimitive Array
+
+> `[string, array<header>]`: Object with nested structure
+
+> `array<array<header>>`: Array of structured objects
+
+****
+####  Valid Examples:
+
+```js
+["id", "name", "email"]                     //// Equivalent flat
+[ "email", ["user", ["id", "name"]]]       // Nested object
+[[ "email", ["user", ["id", "name"]]]]      // Array of nested object
+```
+
+---
+
+### **B.1 Mapping to JSON Schema (for validation)**
+
+Although SJT is structurally different from standard JSON, it can be described with a loose mapping to JSON Schema, especially for tools needing to validate SJT documents before decoding.
+
+**Informal mapping**:
+
+```jsonc
+{
+  "type": "array",
+  "prefixItems": [
+    {
+      // Header section
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          // Accept any value, stricter validation should be implemented in custom logic
+          "type": ["string", "null", "array"]
+        }
+      }
+      
+    },
+    {
+      // Data section
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          // Accept any value, stricter validation should be implemented in custom logic
+          "type": ["string", "number", "boolean", "null", "array"]
+        }
+      }
+    },
+    {
+      // Optional metadata
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "extensions": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  ]
+}
+```
+
+> ⚠️ This schema is for structural validation only. Type consistency and field alignment should be enforced via a separate SJT validator.
+
+---
+
+### **B.3 Metadata Field**
+
+The third (optional) element of an SJT document can be a **metadata object**. It is reserved for versioning, extension registration, or runtime hints. It is **non-normative** for the core decoding but can be utilized by tooling.
+
+**Example:**
+
+```json
+[
+   ...
+  ,
+  {
+    "version": "1.0",
+    "generatedBy": "my-sjt-lib",
+    "extensions": {
+      "timestamp": "2025-07-25T13:00:00Z"
+    }
+  }
+]
+```
+
+**Reserved keys:**
+
+* `version`: The SJT format version (optional, informative)
+* `extensions`: An object for any extended metadata
+* Other keys may be used freely but **should not interfere with decoding logic**
 
 ---
 
