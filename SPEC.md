@@ -29,7 +29,7 @@ Structured JSON Table (SJT) is a lightweight, schema-based data encoding format 
 * [Benchmarks](#benchmarks)
 * [Use Cases](#use-cases)
 * [Appendix A — File Extension and Media Type Specification](#appendix-a--file-extension-and-media-type-specification)
-* [Appendix B: Header Grammar & JSON Schema Mapping](#appendix-b--header-grammar---json-schema-mapping)
+* [Appendix B: Header Grammar & JSON Schema Mapping](#appendix-b-header-grammar--json-schema-mapping)
 
 
 ---
