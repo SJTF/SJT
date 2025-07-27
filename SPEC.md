@@ -45,21 +45,28 @@ An SJT document is an array with two elements:
 ```ts
 [
   header: SjtHeader,
-  data: SjtData
+  data: SjtData,
+  SjtMetadata?  // optional
 ]
 ```
 
 * `header`: A structure descriptor representing the schema of the input data.
 * `data`: A flattened array containing the actual data values that conform to the header structure.
 
-> ⚠️ Note: While the outer structure is a standard JSON array, it must **not** be interpreted as a generic array. This format is governed by the SJT specification, where:
+> Note: While the outer structure is a standard JSON array, it must **not** be interpreted as a generic array. This format is governed by the SJT specification, where:
 >
 > * The **first element** must always be a valid `SjtHeader`
 > * The **second element** must always be a valid `SjtData` block
+* The first two items (`header` and `data`) are mandatory and define the structure and values.
+* The third item (`metadata`) is optional and **reserved for future extensions**.
+
+  * It must be an object if present.
+  * Parsers **must not fail** if `metadata` is present but unrecognized.
+  * This allows forward-compatible extensions (e.g., `version`, `checksum`, etc.).
 
 ---
 
-### 🧩 Definitions
+###  Definitions
 
 #### `SjtHeader`
 
