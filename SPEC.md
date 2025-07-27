@@ -586,20 +586,24 @@ Content-Encoding: gzip
 #### Formal Recursive Header Grammar (EBNF Style)
 
 ```ebnf
-header        ::= string
+SJT           ::= header_array , body_array
+
+header_array  ::= array of header
+body_array    ::= array of data
+
+header        ::= string                                    (* Flat key *)
                 | null                                      (*Primitive Array*)  
                 | array of (string, array of header)       (* object with nested fields *)
-                | array of array of header                 (* array of nested objects *)
-data          ::= string | boolean | null | data[]
+                | array of array of header                 (* Array of structured objects *)
+data          ::= string | number | boolean | null | array of data
 ```
 
-> `string`: Column name
-
-> `null`: Column namePrimitive Array
-
-> `[string, array<header>]`: Object with nested structure
-
-> `array<array<header>>`: Array of structured objects
+> * `header_array`: Always an array (possibly empty) of `header`.
+> * `body_array`: Must have the same structure as `header_array`.
+> * `string`: Key name
+> * `null`: Used to represent a primitive array (`data` must be an array of primitives).
+> * `[string, header[]]`: Nested object key-value pair.
+> * `array<array<<header>>`: Used to represent arrays of objects, with each object conforming to the described structure.
 
 ****
 ####  Valid Examples:
