@@ -42,12 +42,40 @@ Traditional JSON represents each object or array with its full property names, l
 
 An SJT document is an array with two elements:
 
-```js
-[ header, values ]
+```ts
+[
+  header: SjtHeader,
+  data: SjtData
+]
 ```
 
 * `header`: A structure descriptor representing the schema of the input data.
-* `values`: A flattened array containing the actual data values that conform to the header structure.
+* `data`: A flattened array containing the actual data values that conform to the header structure.
+
+> ⚠️ Note: While the outer structure is a standard JSON array, it must **not** be interpreted as a generic array. This format is governed by the SJT specification, where:
+>
+> * The **first element** must always be a valid `SjtHeader`
+> * The **second element** must always be a valid `SjtData` block
+
+---
+
+### 🧩 Definitions
+
+#### `SjtHeader`
+
+Defines the fields, their order, and metadata:
+
+```ts
+ SjtHeader = string[]
+```
+
+#### `SjtData`
+
+Contains the actual content, organized in **column-major layout**:
+
+```ts
+SjtData = any[][]  // Each inner array is a column of values
+```
 
 ---
 
