@@ -26,6 +26,8 @@ Structured JSON Table (SJT) is a compact, tree-structured encoding format for JS
 * [Constraints](#constraints)
 * [Advantages](#advantages)
 * [Use Cases](#use-cases)
+* [Appendix A — File Extension and Media Type Specification](#appendix-a—file-extension-and-media-type-specification)
+
 
 ---
 
@@ -263,7 +265,7 @@ This allows encoding deeply nested array/object combinations naturally.
 
 ```ts
 [
-  Header, // The field template
+  Header[], // The field template
   Data[]  // Flattened object values in header order
 ]
 ```
@@ -326,6 +328,51 @@ When encoding on the server:
 * APIs with large paginated results (e.g., Discord, Google).
 * Event logs or metrics.
 * Realtime streaming of structured data.
+
+---
+
+## Appendix A — File Extension and Media Type Specification
+
+### A.1 File Extensions
+
+To facilitate interoperability, file recognition, and tool support, the following **file extensions** are designated for SJT (Structured JSON Table) data:
+
+| Extension   | Description                                 | Usage Notes                                  |
+| ----------- | ------------------------------------------- | -------------------------------------------- |
+| `.sjt`      | Raw SJT format (uncompressed)               | Primary standard for SJT files               |
+| `.sjz`      | Gzipped SJT (`SJT + gzip`)                  | Recommended for network transmission         |
+| `.sjt.json` | JSON-compatible SJT variant                 | Transitional use in legacy JSON environments |
+| `.sjt.gz`   | Alternate to `.sjz` with explicit gzip hint | Useful for systems that rely on `.gz` suffix |
+
+> **Recommendation:** Use `.sjt` for uncompressed data, and `.sjz` for compressed data.
+
+### A.2 Media (MIME) Type
+
+To support content negotiation and correct handling over HTTP or similar protocols, the following **media type** is proposed for SJT:
+
+```
+Content-Type: application/vnd.sjt+json
+```
+
+* This type denotes that the payload conforms to the **SJT format**, which is a structured, compressed variant of JSON.
+* When used in compressed form (e.g., `gzip`), the following header SHOULD be included:
+
+```
+Content-Encoding: gzip
+```
+
+### A.3 Rationale
+
+* Namespaced media type (`vnd.sjt+json`) ensures clear distinction from ordinary JSON while retaining JSON compatibility.
+* Standardized extensions improve editor recognition, versioning workflows, and interoperability across tooling.
+* Explicit `.gz` suffixes (e.g., `.sjz`, `.sjt.gz`) enable seamless integration with existing decompression tools and pipelines.
+
+### A.4 Implementation Notes
+
+* Applications MAY choose to detect SJT format via magic bytes or schema markers, but using correct file extensions and media types is STRONGLY RECOMMENDED.
+* When embedding SJT in other containers (e.g., tarballs or archives), extensions SHOULD be preserved for extraction clarity.
+
+---
 
 ---
 
