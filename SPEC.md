@@ -333,13 +333,13 @@ When encoding on the server:
 
 ## Benchmarks
 
-```
-JSON             | Size: 3849.34 KB | Encode: 41.81ms | Decode: 51.86ms
-JSON + gzip      | Size: 379.67 KB | Encode: 55.66ms | Decode: 39.61ms
-MessagePack      | Size: 2858.83 KB | Encode: 51.66ms | Decode: 74.53ms
-SJT (json)       | Size: 2433.38 KB | Encode: 36.76ms | Decode: 42.13ms
-SJT + gzip       | Size: 359.00 KB | Encode: 69.59ms | Decode: 46.82ms
-```
+| Format         | Size (KB) | Encode Time | Decode Time |
+|----------------|-----------|-------------|-------------|
+| JSON           | 3849.34   | 41.81 ms    | 51.86 ms    |
+| JSON + Gzip    | 379.67    | 55.66 ms    | 39.61 ms    |
+| MessagePack    | 2858.83   | 51.66 ms    | 74.53 ms    |
+| SJT (json)     | 2433.38   | 36.76 ms    | 42.13 ms    |
+| SJT + Gzip     | 359.00    | 69.59 ms    | 46.82 ms    |
 
 
 ---
