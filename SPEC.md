@@ -269,6 +269,21 @@ data: ['hello', [ ['1', 'Yuki'], ['2', 'Aki'] ]]
 
 ---
 
+### Key Uniqueness Rule
+
+In any `header` array, **all top-level keys and the first element of each nested `[key, subheader]` entry must be unique**. This applies recursively.
+
+Violations include:
+
+```js
+['a', 'b', ['b', ['x']]]      // 'b' appears twice: once as a top-level key and once in nested object
+['a', 'b', 'a']               // 'a' appears twice at the top level
+```
+
+This ensures that each property path is well-defined and avoids ambiguity during encoding and decoding.
+
+---
+
 ### **Rule: `null` Must Be a Standalone Header**
 
 In SJT, the special value `null` in the `header` array is used to indicate that the corresponding column in `data` is a **primitive array** (see previous section). However, to avoid ambiguity, the following strict rule applies:
@@ -445,6 +460,8 @@ If not, throw:
 ```ts
 throw new SJTInvalidHeaderError("Header structure is invalid. Expected string | [string, header[]] | header[][]");
 ```
+
+
 
 #### **Semantic Violations**
 
