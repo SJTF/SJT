@@ -299,7 +299,7 @@ In JSON, all object keys must be strings. Therefore, to encode a key named `"nul
 #### Invalid Representation:
 
 ```jsonc
-['name', null] // Invalid
+["name", null] // Invalid
 ```
 
 #### Rule:
@@ -434,7 +434,7 @@ throw new SJTInvalidHeaderError("Header structure is invalid. Expected string | 
 
 * Rows or values contain undefined/unsupported JSON values (e.g., functions, `undefined`, symbols)
 
-#### `null` Header Behavior**
+#### **`null` Header Behavior**
 
 When a `header` entry is `null`, it indicates that the corresponding **data field must be one of the following**:
 
