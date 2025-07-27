@@ -85,7 +85,7 @@ type SjtHeader =
 ```
 This allows representing an empty object with:
 
-```json
+```ts
 header = []
 body   = []
 ```
@@ -104,7 +104,7 @@ In other words, the top-level `header` is always of type `SjtHeader[]`.
 
 Contains the actual content, organized in **column-major layout**
 
-The `Data` field in SJT is always an **array** containing one or more elements, where each element conforms to the recursive `Data` structure defined as:
+The `Data` field in SJT is always an **array**, possibly empty array if header is empty array, where each element conforms to the recursive `Data` structure defined as:
 
 ```ts
 SjtData = string | boolean | null | number | SjtData[]   // Each inner array is a column of values
