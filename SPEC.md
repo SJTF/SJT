@@ -2,16 +2,16 @@
 
 ### Overview
 
-Structured JSON Table (SJT) is a compact, tree-structured encoding format for JSON-like, bandwidth-efficient data representation designed to encode large, structured datasets—especially those with uniform shape or schema—into a nested, index-driven format. This reduces redundancy and improves serialization/deserialization speed over conventional JSON.
+Structured JSON Table (SJT) is a lightweight, schema-based data encoding format that compresses hierarchical JSON-like data by separating structure (headers) from values. It is optimized for repetitive structures, such as arrays of objects, enabling faster parsing and significantly reduced size compared to raw JSON.
 
 ---
 
 ## Table of Contents
 
 * [Motivation](#motivation)
-* [Encoding Overview](#encoding-overview)
+* [Data Model](#data-model)
 * [Supported Types](#supported-types)
-* [Schema Definition (`Header`)](#schema-definition-header)
+* [Header Format](#header-format)
 * [Data Representation (`Data`)](#data-representation-data)
 * [Examples](#examples)
 
@@ -20,11 +20,12 @@ Structured JSON Table (SJT) is a compact, tree-structured encoding format for JS
   * [Nested Object](#nested-object)
   * [Nested Array of Objects](#nested-array-of-objects)
 * [Encoding/Decoding Rules](#encodingdecoding-rules)
-* [Encoding Algorithm](#encoding-algorithm-server-side)
-* [Decoding Algorithm](#decoding-algorithm-client-side)
+* [Encoding Algorithm](#encoding-algorithm)
+* [Decoding Algorithm](#decoding-algorithm)
 * [Server Encoding Note](#server-encoding-note)
 * [Constraints](#constraints)
 * [Advantages](#advantages)
+* [Benchmarks](#benchmarks)
 * [Use Cases](#use-cases)
 * [Appendix A — File Extension and Media Type Specification](#appendix-a--file-extension-and-media-type-specification)
 
@@ -37,22 +38,16 @@ Traditional JSON represents each object or array with its full property names, l
 
 ---
 
-## Encoding Overview
+## Data Model
 
-Every SJT-encoded data consists of two top-level parts:
+An SJT document is an array with two elements:
 
-```ts
-[
-  <header: SjtHeader>,
-  <data: SjtData>
-]
+```js
+[ header, values ]
 ```
 
-Where:
-
-* `header`: Defines structure and keys.
-* `data`: Actual values to be deserialized following the header schema.
----
+* `header`: A structure descriptor representing the schema of the input data.
+* `values`: A flattened array containing the actual data values that conform to the header structure.
 
 ---
 
@@ -69,9 +64,13 @@ Special handling is provided for arrays of objects.
 
 ---
 
-## Schema Definition (`Header`)
+## Header Format
 
-The header is a recursive array that defines the structure of the data:
+The header is recursively structured to mirror the shape of the data. It uses a combination of:
+
+* Primitive keys: strings denoting the names of properties.
+* Nested descriptors: `[key, descriptor]` pairs for nested objects or arrays.
+* `null`: used to represent a flat primitive array (e.g., `[1, 2, 3]`).
 
 ### Primitives / Flat Object
 
@@ -241,38 +240,48 @@ This allows encoding deeply nested array/object combinations naturally.
 
 ---
 
-### Encoding Algorithm (Server-side)
+## Encoding Algorithm
 
-#### Step 1: Validate Input
+### 1. `extractHeader(data)`
 
-* Input must be an uniformly structured JSON objects.
+Returns the recursive header of the given object or array.
 
-#### Step 2: Build Header
+* If input is an array of primitives → return `[null]`
+* If input is an array of objects → recurse on the first element's structure
+* If input is an object:
 
-* Recursively walk through object to collect all keys.
-* If a value is a nested object or array of structured objects, recurse and build a nested header.
+  * For each key:
 
-#### Step 3: Encode Data
+    * If the value is primitive → add key
+    * If value is object or array → recurse and store as `[key, childHeader]`
 
-* For each object in the array:
+### 2. `getValues(header, data)`
 
-  * Extract values in the order and shape defined by the header.
-  * Use recursion to navigate into nested structures.
+Returns the values in the order defined by the `header`.
 
-#### Step 4: Output
+* Traverses recursively with the same logic as `extractHeader`, pushing values in the same order.
 
-* Return the final structure:
+### 3. `encodeSJT(data)`
 
-```ts
-[
-  Header[], // The field template
-  Data[]  // Flattened object values in header order
-]
+Combines both header and values:
+
+```js
+const header = extractHeader(data);
+const values = getValues(header, data);
+return [header, values];
 ```
 
 ---
 
-### Decoding Algorithm (Client-side)
+### Decoding Algorithm
+
+The decoder reconstructs the original structure by walking the header and reading the corresponding values in sequence.
+
+```ts
+function decodeSJT([header, values]): any {
+  // internal recursive function to walk the header and map values back
+}
+```
 
 #### Step 1: Read Header and Data
 
@@ -315,19 +324,23 @@ When encoding on the server:
 
 ### Advantages
 
-* Minimizes repeated keys → smaller payload size.
-* Easy to cache structure separately.
-* Fast deserialization with uniform template.
-* Works well with JSON-compatible transport.
-* Ideal for tabular or API responses with fixed schema.
+* **Compression:** Smaller output size than JSON, especially for structured data.
+* **Speed:** Fast encode/decode; `decodeSJT` often outperforms `JSON.parse`.
+* **Simplicity:** Pure JSON-compatible structure, no custom binary format.
+* **Schema Extraction:** Header provides a lightweight, self-contained schema.
 
 ---
 
-### Use Cases
+## Benchmarks
 
-* APIs with large paginated results (e.g., Discord, Google).
-* Event logs or metrics.
-* Realtime streaming of structured data.
+```
+JSON             | Size: 3849.34 KB | Encode: 41.81ms | Decode: 51.86ms
+JSON + gzip      | Size: 379.67 KB | Encode: 55.66ms | Decode: 39.61ms
+MessagePack      | Size: 2858.83 KB | Encode: 51.66ms | Decode: 74.53ms
+SJT (json)       | Size: 2433.38 KB | Encode: 36.76ms | Decode: 42.13ms
+SJT + gzip       | Size: 359.00 KB | Encode: 69.59ms | Decode: 46.82ms
+```
+
 
 ---
 
