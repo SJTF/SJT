@@ -857,7 +857,7 @@ for (const row of stream(body)) {
 }
 ```
 
-Streaming decode is not a mandatory feature of the specification, but **it is enabled by the design** and fully supported by the official JavaScript implementation.
+Streaming decode is not a mandatory feature of the specification, but **it is enabled by the design**.
 
 ---
 
