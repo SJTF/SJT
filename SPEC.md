@@ -30,7 +30,7 @@ Structured JSON Table (SJT) is a lightweight, schema-based data encoding format 
 * [Use Cases](#use-cases)
 * [Appendix A — File Extension and Media Type Specification](#appendix-a--file-extension-and-media-type-specification)
 * [Appendix B: Header Grammar & JSON Schema Mapping](#appendix-b-header-grammar--json-schema-mapping)
-
+* [Appendix C — Extensibility and Future Directions](#appendix-c--extensibility-and-future-directions)
 
 ---
 
@@ -779,6 +779,18 @@ The third (optional) element of an SJT document can be a **metadata object**. It
 * Other keys may be used freely but **should not interfere with decoding logic**
 
 ---
+
+## Appendix C — Extensibility and Future Directions
+
+SJT's tabular backbone and recursive support for nested structures position it as a hybrid between relational (SQL-style) and document-oriented (NoSQL) data representations. This opens the door to potential applications beyond mere data interchange:
+
+* **Native indexing**: Header-based indexing could enable columnar access and selective queries, akin to column stores or vectorized engines.
+* **Structured yet flexible storage**: SJT can represent deeply structured records without enforcing rigid schemas, offering an efficient middle ground between row- and document-based systems.
+* **Potential database integration**: With further development, SJT could serve as an internal serialization or archival format for document databases, offering high compression without losing the ability to map fields precisely.
+
+Although SJT is not a replacement for BSON, Avro, or Parquet, its compactness and schema-aware design suggest it may fulfill a distinct niche—particularly in systems that require fast transmission, selective field access, and minimal payload overhead.
+
+If developed further, SJT could evolve into a foundational data format bridging the gap between lightweight interchange and high-performance storage. Its characteristics enable efficient transport-layer encoding while remaining extensible enough to support database-layer semantics such as projection, filtering, and indexing.
 
 ---
 
