@@ -610,6 +610,9 @@ When encoding on the server:
 * **Speed:** faster encoding/decoding performance than Regular JSON due to minimized structural redundancy
 * **Simplicity:** Pure JSON-compatible structure, no custom binary format.
 * **Schema Extraction:** Header provides a lightweight, self-contained schema.
+* **Supports Partial Decoding:**  
+  - The format allows decoding only a subset of the data by applying a filter during decoding.  
+  - This makes it suitable for high-performance environments, where only specific fields are needed from a large dataset.
 
 ---
 
