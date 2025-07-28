@@ -467,13 +467,31 @@ throw new SJTInvalidHeaderError("Header structure is invalid. Expected string | 
 
 * Rows or values contain undefined/unsupported JSON values (e.g., functions, `undefined`, symbols)
 
-#### **`null` Header Behavior**
+####  `null` Header Behavior
 
-When a `header` entry is `null`, it indicates that the corresponding **data field must be one of the following**:
+When a header entry is `null`, it indicates that the corresponding data field must be an **array of primitive values** — including:
 
-* A primitive value (`string`, `number`, `boolean`, or `null`)
+* `string`
+* `number`
+* `boolean`
+* `null`
 
-Any other structure (such as objects or arrays containing objects) is considered invalid and must throw an error.
+Each item in the array must be a **primitive value**. Arrays containing **objects**, **nested arrays**, or other complex structures **are not allowed** and must result in a decoding error.
+
+**Examples (valid):**
+
+```json
+[true, 1, null, "ok"]
+```
+
+**Examples (invalid):**
+
+```json
+[{"a": 1}, 2]       // contains object
+[[1, 2], "yes"]     // contains nested array
+```
+
+This rule ensures SJT can flexibly support mixed-type primitive arrays (common in telemetry, logs, and feature flags) while retaining fast and schema-safe decoding.
 
 #### **Invalid JSON**
 
