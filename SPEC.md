@@ -358,7 +358,7 @@ Array.isArray(header[0]) && header.length === 1
 * `true` → array object mode
 * `false` → plain object
 
-### Nesting:
+#### Nesting:
 
 Headers can recurse to arbitrary depth:
 
@@ -366,7 +366,7 @@ Headers can recurse to arbitrary depth:
 ['a', ['b', ['c', 'd']]] // { a: { b: { c: ..., d: ... } } }
 ```
 
-### Deep Array of Object Nesting
+#### Deep Array of Object Nesting
 
 ```ts
 ['a', [['b', [['c', 'd']]]]]
@@ -375,6 +375,48 @@ Headers can recurse to arbitrary depth:
 
 This allows encoding deeply nested array/object combinations naturally.
 
+---
+
+### Decoder Behavior
+
+* **Selective Field Extraction**: The SJT decoder supports an optional filter mechanism that allows selective extraction of fields during decompression. When a filter header is provided, only the fields indicated in it will be included in the decoded output.
+
+#### Decode Function Rules
+
+The `decode` function must take **two parameters**:
+
+1. **The encoded payload** – a compressed SJT data array.
+2. **A filter header** – a structure that mirrors the original `header`, used to specify which fields to extract.
+
+##### Filter Header Structure
+
+* The filter header must **match the shape** of the original `header`, including nested structures.
+* To **exclude a specific field**, **replace its key with an empty string `""`** in the corresponding position.
+* For **nested structures** (e.g. objects or arrays of objects), if the corresponding entry is set to `""`, then:
+  * **The entire nested structure must be skipped.**
+  * **None of its internal fields will be decoded**, even if deeper levels are non-empty.
+
+##### Examples
+
+Given the original header:
+
+```json
+["id", "name", ["profile", ["age", "address"]]]
+````
+
+To decode only `id` and `profile.age`:
+
+```json
+["id", "", ["profile", ["age", "address"]]]
+```
+
+To decode only `id` and **skip the entire `profile` structure**:
+
+```json
+["id", "", ""]
+```
+
+> **Note:** Setting a nested object’s position to `""` instructs the decoder to completely bypass decoding of that structure, regardless of any deeper fields listed under it.
 
 ---
 
@@ -391,7 +433,7 @@ Returns the recursive header of the given object or array.
   * For each key:
 
     * If the value is primitive → add key
-    * If value is object or array → recurse and store as `[key, childHeader]`
+    * If value is object or array → recurse and store as `[key, childHeader[]]`
 
 ### 2. `getValues(header, data)`
 
@@ -413,23 +455,26 @@ return [header, values];
 
 ### Decoding Algorithm
 
-The decoder reconstructs the original structure by walking the header and reading the corresponding values in sequence.
+The decoder reconstructs the original structure by traversing the header and reading corresponding values in sequence.
 
 ```ts
-function decodeSJT([header, values]): any {
-  // internal recursive function to walk the header and map values back
+function decodeSJT([header, values], filter?): any {
+  // Internal recursive function to walk the header and map values back
 }
-```
+````
 
-#### Step 1: Read Header and Data
+#### Step 1: Read Header, Data, and Filter (if present)
 
-* Extract header and data entries from the 2-element array.
+* Extract the header and data entries from the two-element array.
+* If a filter header is present, it must match the structure of the main header.
 
 #### Step 2: Rebuild Objects
 
-* For each entry in the data array:
+Implementers **MUST** ensure that:
 
-  * Recursively apply keys from the header to inject values into new objects.
+* Each decoded record reconstructs the original data shape as defined by the header.
+* If `null` is encountered, decoding **must stop recursion at this point** and return the value directly.
+* An empty string `""` in the filter header at any position indicates that the corresponding field (and all of its nested children, if any) **must be skipped entirely** and not decoded.
 
 #### Step 3: Output
 
@@ -466,6 +511,14 @@ throw new SJTInvalidHeaderError("Header structure is invalid. Expected string | 
 #### **Semantic Violations**
 
 * Rows or values contain undefined/unsupported JSON values (e.g., functions, `undefined`, symbols)
+
+* **If a filter is provided, and it does not structurally match the header**:
+
+  * Any unexpected key
+  * Mismatched structure (e.g., filter contains a field that doesn’t exist in the original header)
+  * Invalid use of `""` in positions that don’t align with the header
+
+> The filter must be a *partial mirror* of the header, where fields to skip are marked with `""`, and all other positions either match the header structure or are omitted. Any deviation should result in a decoding error.
 
 ####  **`null` Header Behavior**
 
