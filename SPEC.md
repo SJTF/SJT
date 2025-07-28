@@ -98,6 +98,7 @@ Which decodes to:
 If the array is not empty, each element must conform to the `Header` grammar above.
 
 In other words, the top-level `header` is always of type `SjtHeader[]`.
+
 It must follow these strict rules too:
 * The header **MUST NOT** contain any empty string (`""`), at **any depth** of the structure.
 * This applies recursively to all nested objects or arrays.
