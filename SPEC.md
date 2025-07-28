@@ -99,9 +99,9 @@ If the array is not empty, each element must conform to the `Header` grammar abo
 
 In other words, the top-level `header` is always of type `SjtHeader[]`.
 
-It must follow these strict rules too:
-* The header **MUST NOT** contain any empty string (`""`), at **any depth** of the structure.
-* This applies recursively to all nested objects or arrays.
+Additional constraints:
+* The header **MUST NOT** contain any empty string (`""`) — this rule applies **at any depth** of the structure.
+* This rule is **recursive**, and applies to all keys in nested objects or structured arrays.
 
 #### `SjtData`
 
