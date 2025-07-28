@@ -841,15 +841,23 @@ The third (optional) element of an SJT document can be a **metadata object**. It
 
 ## Appendix C — Extensibility and Future Directions
 
-SJT's tabular backbone and recursive support for nested structures position it as a hybrid between relational (SQL-style) and document-oriented (NoSQL) data representations. This opens the door to potential applications beyond mere data interchange:
+### **C.1 Streaming Decode (Natural Capability)**
 
-* **Native indexing**: Header-based indexing could enable columnar access and selective queries, akin to column stores or vectorized engines.
-* **Structured yet flexible storage**: SJT can represent deeply structured records without enforcing rigid schemas, offering an efficient middle ground between row- and document-based systems.
-* **Potential database integration**: With further development, SJT could serve as an internal serialization or archival format for document databases, offering high compression without losing the ability to map fields precisely.
+Due to the separation between structure (`header`) and data (`body`), the SJT format naturally supports **streaming decoding**.
 
-Although SJT is not a replacement for BSON, Avro, or Parquet, its compactness and schema-aware design suggest it may fulfill a distinct niche—particularly in systems that require fast transmission, selective field access, and minimal payload overhead.
+This means decoders can process each data row independently, without needing to load the entire payload into memory.
 
-If developed further, SJT could evolve into a foundational data format bridging the gap between lightweight interchange and high-performance storage. Its characteristics enable efficient transport-layer encoding while remaining extensible enough to support database-layer semantics such as projection, filtering, and indexing.
+This is particularly useful when working with large datasets or when decoding in resource-constrained environments (e.g., web browsers, IoT devices).
+
+```ts
+// Pseudocode
+for (const row of stream(body)) {
+  const obj = decodeRow(header, row)
+  yield obj
+}
+```
+
+Streaming decode is not a mandatory feature of the specification, but **it is enabled by the design** and fully supported by the official JavaScript implementation.
 
 ---
 
