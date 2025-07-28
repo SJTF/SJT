@@ -352,7 +352,7 @@ This distinction ensures clarity and avoids structural ambiguity when parsing an
 Decoder can distinguish them via:
 
 ```ts
-Array.isArray(header[0])
+Array.isArray(header[0]) && header.length === 1 
 ```
 
 * `true` → array object mode
