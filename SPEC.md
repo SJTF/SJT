@@ -71,7 +71,7 @@ An SJT document is an array with two elements:
 
 #### `SjtHeader`
 
-Defines the fields, their order, and metadata.
+Defines the fields, their order.
 
 The `header` field in SJT is always an **array**, possibly empty array, where each element (if present) conforms to the recursive `Header` structure defined as:
 
@@ -98,6 +98,9 @@ Which decodes to:
 If the array is not empty, each element must conform to the `Header` grammar above.
 
 In other words, the top-level `header` is always of type `SjtHeader[]`.
+It must follow these strict rules too:
+* The header **MUST NOT** contain any empty string (`""`), at **any depth** of the structure.
+* This applies recursively to all nested objects or arrays.
 
 #### `SjtData`
 
@@ -493,7 +496,7 @@ Implementations of the SJT decoder **must strictly validate input structure** an
 
 Header must conform to:
 
-* A **string** (single column)
+* A **string**, and **MUST NOT** be an empty string `""` (single column)
 * An **array of**:
 
   * A `[string, array<header>]` (nested object)
