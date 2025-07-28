@@ -453,7 +453,7 @@ Header must conform to:
 * An **array of**:
 
   * A `[string, array<header>]` (nested object)
-  * A `array<header>` (array of structured object)
+  * A `array<array<header>>` (array of structured object)
 
 If not, throw:
 
