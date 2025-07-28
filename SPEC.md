@@ -81,7 +81,7 @@ type SjtHeader =
   | string
   | null
   | [string, Header[]]           // Nested object key
-  | Header[]                     // Object array
+  | Header[][]                     // Object array
 ```
 This allows representing an empty object with:
 
@@ -453,7 +453,7 @@ Header must conform to:
 * An **array of**:
 
   * A `[string, array<header>]` (nested object)
-  * A `array<array<header>>` (array of structured object)
+  * A `array<header>` (array of structured object)
 
 If not, throw:
 
