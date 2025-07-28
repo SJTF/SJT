@@ -300,7 +300,7 @@ In SJT, the special value `null` in the `header` array is used to indicate that 
 
 ```jsonc
 [ null, null ]        // ❌ ambiguous: interpreted as an object with duplicate keys (invalid)
-[ "name", null ]      // ❌ mixed keys in same object (invalid if used to define object structure)
+[ "name", null ]      // ❌ mixed keys in same object (invalid if used to define primitive array structure)
 ```
 
 Including multiple `null` values within the same array creates ambiguity, as SJT treats header arrays as **structured key paths** for object construction. Having duplicate keys (`null`, `null`) is structurally invalid and MUST result in a decoding error.
