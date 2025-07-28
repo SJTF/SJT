@@ -1,6 +1,6 @@
 # SJT Format Specification
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16496028.svg)](https://doi.org/10.5281/zenodo.16496028)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16519054.svg)](https://doi.org/10.5281/zenodo.16519054)
 
 This repository contains the **formal specification** of the SJT (Structured JSON Table) format — a compact, schema-driven data encoding structure optimized for nested JSON arrays with repeating patterns.
 
