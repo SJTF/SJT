@@ -467,7 +467,7 @@ throw new SJTInvalidHeaderError("Header structure is invalid. Expected string | 
 
 * Rows or values contain undefined/unsupported JSON values (e.g., functions, `undefined`, symbols)
 
-####  `null` Header Behavior
+####  **`null` Header Behavior**
 
 When a header entry is `null`, it indicates that the corresponding data field must be an **array of primitive values** — including:
 
