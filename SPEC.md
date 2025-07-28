@@ -433,7 +433,7 @@ function decodeSJT([header, values]): any {
 
 #### Step 3: Output
 
-* Return an array of fully reconstructed JSON objects.
+* Return an fully reconstructed JSON objects.
 
 ---
 
