@@ -382,7 +382,7 @@ This allows encoding deeply nested array/object combinations naturally.
 
 To support efficient **stream-based processing**, **record skipping**, and **external indexing**, a structured SJT file **SHOULD** follow the following extended format convention when used as a persistent or streamable data store:
 
-```json
+```js
 [
 [ /* header row */ ],
 [ /* data row 1 */ ],
