@@ -378,38 +378,6 @@ Headers can recurse to arbitrary depth:
 
 This allows encoding deeply nested array/object combinations naturally.
 
-### Structured Line Format (For Streaming / Indexed Storage)
-
-To support efficient **stream-based processing**, **record skipping**, and **external indexing**, a structured SJT file **SHOULD** follow the following extended format convention when used as a persistent or streamable data store:
-
-```js
-[
-[ /* header row */ ],
-[ /* data row 1 */ ],
-[ /* data row 2 */ ],
-...
-[ /* data row N */ ],
-]
-```
-
-Where:
-
-* **Line 1**: A single opening bracket line: `[`
-  → Marks the beginning of the payload, for stream parsers to detect.
-* **Line 2**: The `header` row (an array of field names).
-* **Lines 3 to N-1**: The `data` rows, each a JSON array matching the order of the header.
-* **Last line**: A single closing bracket line: `]`
-  → Marks the end of the payload, allowing validation or detection of truncated data.
-
-This layout allows:
-
-* **Fast line-based scanning** (e.g., using file readers with line indexing).
-* Easy **skipping of records** without parsing the full structure.
-* Future support for **external or embedded indexes**, pointing to line offsets of data records.
-
-**Note:**
-This structure is **optional** for SJT in-memory usage, but **recommended** when storing SJT as flat files, databases, or over the network where partial reading or indexing is expected.
-
 ---
 
 ### Decoder Behavior
